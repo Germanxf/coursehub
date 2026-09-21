@@ -112,3 +112,107 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+---
+
+# Evaluación práctica: Integración Cursos, Estudiantes y Matrículas
+
+API NestJS con listas en memoria (sin base de datos). Tres módulos: `CoursesModule`, `StudentsModule` y `EnrollmentsModule`.
+
+## Integración de ramas
+
+`feature/estudiantes` se integró en `main` con `git merge` (commit de merge verificable en `git log --graph`).
+La rama tenía historia independiente y su proyecto estaba dentro de `Documents/NikolaiR8/coursehub/`, por lo que se usó:
+
+```bash
+git merge -X subtree=Documents/NikolaiR8/coursehub --allow-unrelated-histories origin/feature/estudiantes
+```
+
+Conflictos resueltos: se conservó Courses de `main`, se incorporó Students completo y se unificaron `app.module.ts`, `main.ts` y `package.json`.
+
+## Estructura final
+
+```
+src/
+├── app.module.ts            # registra Courses, Students y Enrollments
+├── main.ts                  # ValidationPipe global (whitelist + forbidNonWhitelisted + transform)
+├── common/pipes/positive-int.pipe.ts   # Pipe personalizado para ids de ruta
+├── courses/                 # módulo de cursos (exporta CoursesService)
+├── students/                # módulo de estudiantes (exporta StudentsService)
+└── enrollments/
+    ├── dto/create-enrollment.dto.ts
+    ├── dto/filter-enrollments.dto.ts
+    ├── enrollments.controller.ts   # sin reglas de negocio
+    ├── enrollments.service.ts      # lista en memoria + reglas de negocio
+    └── enrollments.module.ts
+```
+
+## Endpoints de matrículas
+
+| Método | Ruta | Descripción | Respuestas |
+|---|---|---|---|
+| POST | `/enrollments` | Registra una matrícula | 201, 400, 404, 409, 422 |
+| GET | `/enrollments?studentId=&courseId=` | Lista con filtros opcionales combinables | 200, 400 |
+| GET | `/students/:studentId/enrollments` | Matrículas de un estudiante | 200, 400, 404 |
+| GET | `/courses/:courseId/enrollments` | Matrículas de un curso | 200, 400, 404 |
+| DELETE | `/enrollments/:id` | Cancela una matrícula | 200, 400, 404 |
+
+### Reglas de negocio (en `EnrollmentsService`)
+
+1. El estudiante debe existir, si no **404**.
+2. El curso debe existir, si no **404**.
+3. El estudiante debe estar activo (`isActive`), si no **422**.
+4. No puede repetirse la combinación `studentId + courseId`, si no **409**.
+
+## Ejemplos
+
+Preparación: crear estudiantes (el módulo arranca vacío).
+```bash
+curl -X POST localhost:3000/students -H "Content-Type: application/json" \
+  -d '{"name":"Ana Pérez","email":"ana@x.com","age":20,"career":"Software","semester":5}'
+curl -X POST localhost:3000/students -H "Content-Type: application/json" \
+  -d '{"name":"Luis Mora","email":"luis@x.com","age":22,"career":"Software","semester":6,"isActive":false}'
+```
+
+**Matrícula válida**: `POST /enrollments` `{"studentId":1,"courseId":1}`
+```json
+201 {"id":1,"studentId":1,"courseId":1}
+```
+
+**Matrícula duplicada**: mismo body
+```json
+409 {"message":"El estudiante 1 ya está matriculado en el curso 1","error":"Conflict","statusCode":409}
+```
+
+**Estudiante inactivo**: `{"studentId":2,"courseId":1}`
+```json
+422 {"message":"El estudiante 2 está inactivo y no puede matricularse","error":"Unprocessable Entity","statusCode":422}
+```
+
+**Identificador inexistente**: `{"studentId":99,"courseId":1}`
+```json
+404 {"message":"El estudiante con ID 99 no existe","error":"Not Found","statusCode":404}
+```
+
+**Body inválido**: `{"studentId":"abc","courseId":1,"extra":true}`
+```json
+400 {"message":["property extra should not exist","studentId must be a positive number","studentId must be an integer number"],"error":"Bad Request","statusCode":400}
+```
+
+**Filtros**: `GET /enrollments?studentId=1&courseId=2`
+```json
+200 [{"id":2,"studentId":1,"courseId":2}]
+```
+
+**Id de ruta inválido (Pipe)**: `GET /students/abc/enrollments`
+```json
+400 {"message":"El identificador de la ruta debe ser un entero positivo","error":"Bad Request","statusCode":400}
+```
+
+**Cancelación**: `DELETE /enrollments/1` responde `200 {"id":1,"studentId":1,"courseId":1}`; repetirlo responde `404`.
+
+## Pruebas
+
+```bash
+npm run test -- src/enrollments
+```

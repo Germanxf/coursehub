@@ -214,5 +214,5 @@ curl -X POST localhost:3000/students -H "Content-Type: application/json" \
 ## Pruebas
 
 ```bash
-npm run test -- src/enrollments
+npm run test
 ```

@@ -1,153 +1,112 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# CourseHub
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST desarrollada con [NestJS](https://nestjs.com) que gestiona **Cursos**, **Estudiantes** y **Matrículas** utilizando listas en memoria (sin base de datos). Proyecto realizado como evaluación práctica de integración de ramas (Asignatura: Aplicaciones para el servidor web).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Instalación
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+## Ejecución
 
 ```bash
-# development
-$ npm run start
+# desarrollo
+npm run start
 
-# watch mode
-$ npm run start:dev
+# desarrollo con recarga automática
+npm run start:dev
 
-# production mode
-$ npm run start:prod
+# producción
+npm run start:prod
 ```
 
-## Run tests
+## Pruebas
 
 ```bash
-# unit tests
-$ npm run test
+# pruebas unitarias
+npm run test
 
-# e2e tests
-$ npm run test:e2e
+# pruebas end-to-end
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# cobertura
+npm run test:cov
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 ---
 
-# Evaluación práctica: Integración Cursos, Estudiantes y Matrículas
-
-API NestJS con listas en memoria (sin base de datos). Tres módulos: `CoursesModule`, `StudentsModule` y `EnrollmentsModule`.
-
 ## Integración de ramas
 
-`feature/estudiantes` se integró en `main` con `git merge` (commit de merge verificable en `git log --graph`).
-La rama tenía historia independiente y su proyecto estaba dentro de `Documents/NikolaiR8/coursehub/`, por lo que se usó:
+La rama `feature/estudiantes` (con historia independiente, ubicada originalmente en `Documents/NikolaiR8/coursehub/`) se integró en `main` mediante `git merge`, conservando el módulo `CoursesModule` ya existente e incorporando el módulo `StudentsModule` completo:
 
 ```bash
 git merge -X subtree=Documents/NikolaiR8/coursehub --allow-unrelated-histories origin/feature/estudiantes
 ```
 
-Conflictos resueltos: se conservó Courses de `main`, se incorporó Students completo y se unificaron `app.module.ts`, `main.ts` y `package.json`.
+El commit de merge y la historia combinada son verificables con:
+
+```bash
+git log --graph --oneline --all
+```
+
+Tras el merge se unificaron `app.module.ts`, `main.ts` y `package.json`, y se registraron `CoursesModule`, `StudentsModule` y `EnrollmentsModule` en `AppModule`.
 
 ## Estructura final
-
-```
 src/
-├── app.module.ts            # registra Courses, Students y Enrollments
-├── main.ts                  # ValidationPipe global (whitelist + forbidNonWhitelisted + transform)
-├── common/pipes/positive-int.pipe.ts   # Pipe personalizado para ids de ruta
-├── courses/                 # módulo de cursos (exporta CoursesService)
-├── students/                # módulo de estudiantes (exporta StudentsService)
+├── app.module.ts # registra Courses, Students y Enrollments
+├── main.ts # ValidationPipe global (whitelist + forbidNonWhitelisted + transform)
+├── common/
+│ └── pipes/
+│ └── positive-int.pipe.ts # Pipe personalizado para ids de ruta (entero positivo)
+├── courses/ # módulo de cursos (exporta CoursesService)
+│ ├── courses.controller.ts
+│ ├── courses.service.ts
+│ └── courses.module.ts
+├── students/ # módulo de estudiantes (exporta StudentsService)
+│ ├── dto/
+│ │ ├── create-student.dto.ts
+│ │ ├── update-student.dto.ts
+│ │ └── filter-student.dto.ts
+│ ├── entities/student.entity.ts
+│ ├── pipes/parse-status.pipe.ts # valida el body de PATCH /students/:id/status
+│ ├── students.controller.ts
+│ ├── students.service.ts
+│ └── students.module.ts
 └── enrollments/
-    ├── dto/create-enrollment.dto.ts
-    ├── dto/filter-enrollments.dto.ts
-    ├── enrollments.controller.ts   # sin reglas de negocio
-    ├── enrollments.service.ts      # lista en memoria + reglas de negocio
-    └── enrollments.module.ts
-```
+├── dto/
+│ ├── create-enrollment.dto.ts
+│ └── filter-enrollments.dto.ts
+├── enrollments.controller.ts # sin reglas de negocio
+├── enrollments.service.ts # lista en memoria + reglas de negocio
+└── enrollments.module.ts
 
-## Endpoints de matrículas
+---
+
+## Endpoints
+
+### Cursos
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/courses?level=` | Lista cursos, filtro opcional por nivel |
+| GET | `/courses/:id` | Obtiene un curso |
+| POST | `/courses` | Crea un curso |
+| PATCH | `/courses/:id` | Actualiza un curso |
+| DELETE | `/courses/:id` | Elimina un curso |
+
+### Estudiantes
+
+| Método | Ruta | Descripción | Respuestas |
+|---|---|---|---|
+| POST | `/students` | Crea un estudiante | 201, 400, 409 |
+| GET | `/students?career=&semester=&isActive=` | Lista con filtros opcionales combinables | 200 |
+| GET | `/students/:id` | Obtiene un estudiante | 200, 404 |
+| PATCH | `/students/:id` | Actualiza datos del estudiante | 200, 404, 409 |
+| PATCH | `/students/:id/status` | Cambia exclusivamente `isActive` | 200, 400, 404 |
+| DELETE | `/students/:id` | Elimina un estudiante (solo si está inactivo) | 200, 400, 404 |
+
+### Matrículas
 
 | Método | Ruta | Descripción | Respuestas |
 |---|---|---|---|
@@ -157,19 +116,25 @@ src/
 | GET | `/courses/:courseId/enrollments` | Matrículas de un curso | 200, 400, 404 |
 | DELETE | `/enrollments/:id` | Cancela una matrícula | 200, 400, 404 |
 
-### Reglas de negocio (en `EnrollmentsService`)
+#### Reglas de negocio (en `EnrollmentsService`)
 
 1. El estudiante debe existir, si no **404**.
 2. El curso debe existir, si no **404**.
 3. El estudiante debe estar activo (`isActive`), si no **422**.
 4. No puede repetirse la combinación `studentId + courseId`, si no **409**.
 
-## Ejemplos
+El controlador (`EnrollmentsController`) no contiene lógica de negocio: solo delega en `EnrollmentsService`. La validación de los ids de ruta se hace con el Pipe personalizado `PositiveIntPipe`, y el body de entrada se valida con `CreateEnrollmentDto` / `FilterEnrollmentsDto` mediante el `ValidationPipe` global.
+
+---
+
+## Ejemplos de uso
 
 Preparación: crear estudiantes (el módulo arranca vacío).
+
 ```bash
 curl -X POST localhost:3000/students -H "Content-Type: application/json" \
   -d '{"name":"Ana Pérez","email":"ana@x.com","age":20,"career":"Software","semester":5}'
+
 curl -X POST localhost:3000/students -H "Content-Type: application/json" \
   -d '{"name":"Luis Mora","email":"luis@x.com","age":22,"career":"Software","semester":6,"isActive":false}'
 ```
@@ -211,8 +176,12 @@ curl -X POST localhost:3000/students -H "Content-Type: application/json" \
 
 **Cancelación**: `DELETE /enrollments/1` responde `200 {"id":1,"studentId":1,"courseId":1}`; repetirlo responde `404`.
 
-## Pruebas
+---
 
-```bash
-npm run test
-```
+## Evidencia de la evaluación práctica
+
+- ✅ **Merge e integración inicial**: merge verificable en `git log --graph`, Courses y Students conservados, tres módulos registrados en `AppModule`.
+- ✅ **Diseño del módulo Matrículas**: `EnrollmentsModule`, `EnrollmentsController` y `EnrollmentsService` separados; datos administrados en memoria.
+- ✅ **Flujos de matrícula**: registro, listado por estudiante/curso y cancelación mediante rutas REST.
+- ✅ **Validación y reglas de negocio**: DTOs con `class-validator`, `ValidationPipe` global (`whitelist` + `forbidNonWhitelisted` + `transform`), `PositiveIntPipe` personalizado, y excepciones para existencia, estudiante activo y duplicados.
+- ✅ **Pruebas y evidencia**: casos exitosos y fallidos documentados arriba; pruebas unitarias en `src/enrollments/enrollments.service.spec.ts` (`npm run test`); commits verificables en el historial del repositorio.

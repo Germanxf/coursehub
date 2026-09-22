@@ -53,35 +53,36 @@ git log --graph --oneline --all
 Tras el merge se unificaron `app.module.ts`, `main.ts` y `package.json`, y se registraron `CoursesModule`, `StudentsModule` y `EnrollmentsModule` en `AppModule`.
 
 ## Estructura final
-src/
-├── app.module.ts # registra Courses, Students y Enrollments
-├── main.ts # ValidationPipe global (whitelist + forbidNonWhitelisted + transform)
-├── common/
-│ └── pipes/
-│ └── positive-int.pipe.ts # Pipe personalizado para ids de ruta (entero positivo)
-├── courses/ # módulo de cursos (exporta CoursesService)
-│ ├── courses.controller.ts
-│ ├── courses.service.ts
-│ └── courses.module.ts
-├── students/ # módulo de estudiantes (exporta StudentsService)
-│ ├── dto/
-│ │ ├── create-student.dto.ts
-│ │ ├── update-student.dto.ts
-│ │ └── filter-student.dto.ts
-│ ├── entities/student.entity.ts
-│ ├── pipes/parse-status.pipe.ts # valida el body de PATCH /students/:id/status
-│ ├── students.controller.ts
-│ ├── students.service.ts
-│ └── students.module.ts
-└── enrollments/
-├── dto/
-│ ├── create-enrollment.dto.ts
-│ └── filter-enrollments.dto.ts
-├── enrollments.controller.ts # sin reglas de negocio
-├── enrollments.service.ts # lista en memoria + reglas de negocio
-└── enrollments.module.ts
 
----
+```
+src/
+├── app.module.ts                     # registra Courses, Students y Enrollments
+├── main.ts                           # ValidationPipe global (whitelist + forbidNonWhitelisted + transform)
+├── common/
+│   └── pipes/
+│       └── positive-int.pipe.ts      # Pipe personalizado para ids de ruta (entero positivo)
+├── courses/                          # módulo de cursos (exporta CoursesService)
+│   ├── courses.controller.ts
+│   ├── courses.service.ts
+│   └── courses.module.ts
+├── students/                         # módulo de estudiantes (exporta StudentsService)
+│   ├── dto/
+│   │   ├── create-student.dto.ts
+│   │   ├── update-student.dto.ts
+│   │   └── filter-student.dto.ts
+│   ├── entities/student.entity.ts
+│   ├── pipes/parse-status.pipe.ts    # valida el body de PATCH /students/:id/status
+│   ├── students.controller.ts
+│   ├── students.service.ts
+│   └── students.module.ts
+└── enrollments/
+    ├── dto/
+    │   ├── create-enrollment.dto.ts
+    │   └── filter-enrollments.dto.ts
+    ├── enrollments.controller.ts     # sin reglas de negocio
+    ├── enrollments.service.ts        # lista en memoria + reglas de negocio
+    └── enrollments.module.ts
+```
 
 ## Endpoints
 

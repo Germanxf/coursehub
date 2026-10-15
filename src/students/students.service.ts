@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Student } from './entities/student.entity.js';
+import { GetStudentsFilterDto } from './dto/get-students-filter.dto.js';
 
 @Injectable()
 export class StudentsService {
@@ -16,9 +17,12 @@ export class StudentsService {
     return this.studentsRepository.save(student);
   }
 
-  async findAll(filterDto: any) {
-    // Aquí puedes aplicar tu lógica de búsqueda si filterDto tiene propiedades
-    return this.studentsRepository.find();
+  async findAll(filterDto?: GetStudentsFilterDto) {
+    const where: any = {};
+    if (filterDto?.career) where.career = filterDto.career;
+    if (filterDto?.semester) where.semester = filterDto.semester;
+    if (filterDto?.isActive !== undefined) where.isActive = filterDto.isActive;
+    return this.studentsRepository.find({ where });
   }
 
   async findOne(id: number) {

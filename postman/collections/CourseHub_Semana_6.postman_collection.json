@@ -1,0 +1,225 @@
+{
+  "info": {
+    "_postman_id": "c6b8c4d2-7b5e-4ad0-8cec-292ce7b5e596",
+    "name": "CourseHub API - Semana 6",
+    "description": "Colección de pruebas para la Semana 6: Consultas de datos, paginación, ordenamiento y QueryBuilder",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Sembrado - Crear Cursos",
+      "item": [
+        {
+          "name": "Crear Curso 1",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"NestJS Básico\",\n  \"level\": \"principiante\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Crear Curso 2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"TypeScript Avanzado\",\n  \"level\": \"avanzado\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Crear Curso 3",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Bases de Datos con PostgreSQL\",\n  \"level\": \"intermedio\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Crear Curso 4",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Arquitectura de Software\",\n  \"level\": \"avanzado\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Crear Curso 5",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Diseño de APIs REST\",\n  \"level\": \"principiante\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Crear Curso 6",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Microservicios con NestJS\",\n  \"level\": \"intermedio\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/courses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["courses"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Demostración Requerida",
+      "item": [
+        {
+          "name": "Paso 2a: Página 1 Cursos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/courses?page=1&limit=3&sortBy=id&order=ASC",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["courses"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "3" },
+                { "key": "sortBy", "value": "id" },
+                { "key": "order", "value": "ASC" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 2b: Página 2 Cursos (Sin repetir)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/courses?page=2&limit=3&sortBy=id&order=ASC",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["courses"],
+              "query": [
+                { "key": "page", "value": "2" },
+                { "key": "limit", "value": "3" },
+                { "key": "sortBy", "value": "id" },
+                { "key": "order", "value": "ASC" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 3: Filtrar cursos por level y verificar metadatos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/courses?level=principiante&page=1&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["courses"],
+              "query": [
+                { "key": "level", "value": "principiante" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 4: Buscar matrículas por texto (ILIKE QueryBuilder)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/enrollments?search=nest",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["enrollments"],
+              "query": [
+                { "key": "search", "value": "nest" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 5: Búsqueda, estudiante activo y paginación combinadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/enrollments?search=nest&activeOnly=true&page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["enrollments"],
+              "query": [
+                { "key": "search", "value": "nest" },
+                { "key": "activeOnly", "value": "true" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 6: Petición inválida (400 Bad Request)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/courses?page=0&limit=999&sortBy=invalido&order=DESVIADO",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["courses"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "limit", "value": "999" },
+                { "key": "sortBy", "value": "invalido" },
+                { "key": "order", "value": "DESVIADO" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paso 7: Búsqueda sin resultados (200 OK con items vacíos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/enrollments?search=registroinexistente",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["enrollments"],
+              "query": [
+                { "key": "search", "value": "registroinexistente" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

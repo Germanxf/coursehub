@@ -1,33 +1,37 @@
 # CourseHub API 🚀
 
-API REST desarrollada con **NestJS**, **TypeScript** y **Node.js** para la gestión integral de cursos, estudiantes y matrículas (*Enrollments*).
+API REST desarrollada con **NestJS**, **TypeScript**, **TypeORM** y **PostgreSQL** para la gestión integral de cursos, estudiantes y matrículas (*Enrollments*).
 
 ---
 
 ## 🏗️ Arquitectura y Estructura del Proyecto
 
-El proyecto está modularizado en tres módulos principales registrados en `AppModule`:
-- **`CoursesModule`**: Administración de cursos (creación, consulta, actualización y eliminación).
+El proyecto está modularizado en tres módulos funcionales principales registrados en `AppModule`:
+- **`CoursesModule`**: Administración de cursos con filtros, ordenamiento seguro y paginación controlada.
 - **`StudentsModule`**: Gestión de estudiantes con filtros, control de estado activo/inactivo y validaciones de unicidad de correo.
-- **`EnrollmentsModule`**: Administración de matrículas en memoria, relacionando estudiantes y cursos con validaciones de existencia, estado activo y unicidad de combinación `(studentId, courseId)`.
+- **`EnrollmentsModule`**: Administración de matrículas persistentes con búsqueda textual insensible a mayúsculas (`ILIKE`), carga de relaciones (`student`, `course`), filtros combinables y paginación mediante `QueryBuilder`.
 
 ```
 src/
 ├── app.controller.ts
-├── app.module.ts                   # Registra CoursesModule, StudentsModule y EnrollmentsModule
+├── app.module.ts                   # Registra TypeORM y módulos funcionales
 ├── app.service.ts
 ├── main.ts                         # Configuración de ValidationPipe global
 ├── welcome.controller.ts
 ├── welcome.service.ts
 ├── courses/
-│   ├── courses.controller.ts
-│   ├── courses.module.ts           # Exporta CoursesService
-│   ├── courses.service.ts
-│   └── dto/
-│       └── create-course.dto.ts
+│   ├── courses.controller.ts       # Endpoint GET /courses paginado y ordenable
+│   ├── courses.module.ts
+│   ├── courses.service.ts          # findAndCount con skip, take y ordenamiento
+│   ├── dto/
+│   │   ├── create-course.dto.ts    # title y level
+│   │   ├── courses-query.dto.ts    # DTO con level, page, limit, sortBy, order
+│   │   └── update-couerse.dto.ts
+│   └── entities/
+│       └── course.entity.ts        # Campos: id, title, level
 ├── students/
 │   ├── students.controller.ts
-│   ├── students.module.ts          # Exporta StudentsService
+│   ├── students.module.ts
 │   ├── students.service.ts
 │   ├── dto/
 │   │   ├── create-student.dto.ts
@@ -37,13 +41,14 @@ src/
 │   ├── entities/
 │   │   └── student.entity.ts
 │   └── pipes/
-│       └── parse-id.pipe.ts        # Pipe personalizado para validar enteros positivos (> 0)
+│       └── parse-id.pipe.ts        # Pipe para validar enteros positivos (> 0)
 └── enrollments/
-    ├── enrollments.controller.ts   # Endpoints de matrículas
-    ├── enrollments.module.ts       # Importa StudentsModule y CoursesModule
-    ├── enrollments.service.ts      # Lógica de negocio y almacenamiento en memoria
+    ├── enrollments.controller.ts   # Endpoints de matrículas con QueryBuilder
+    ├── enrollments.module.ts
+    ├── enrollments.service.ts      # QueryBuilder con :search, leftJoinAndSelect, skip/take
     ├── dto/
     │   ├── create-enrollment.dto.ts
+    │   ├── enrollments-query.dto.ts # DTO con search, studentId, courseId, activeOnly, page, limit
     │   └── get-enrollments-filter.dto.ts
     └── entities/
         └── enrollment.entity.ts
@@ -53,12 +58,22 @@ src/
 
 ## ⚙️ Instalación y Ejecución
 
-### 1. Instalar dependencias
+### 1. Variables de Entorno (`.env`)
+Configurar el archivo `.env` en la raíz del proyecto basándose en `.env.example`:
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=coursehub
+DATABASE_USER=postgres
+DATABASE_PASSWORD=tucontraseña
+```
+
+### 2. Instalar dependencias
 ```bash
 npm install
 ```
 
-### 2. Iniciar la aplicación
+### 3. Iniciar la aplicación
 ```bash
 # Modo desarrollo (watch)
 npm run start:dev
@@ -67,289 +82,246 @@ npm run start:dev
 npm run build
 ```
 
-### 3. Ejecutar Pruebas
+### 4. Ejecutar Pruebas y Linter
 ```bash
 # Pruebas unitarias
 npm run test
 
-# Pruebas e2e (End-to-End)
-npm run test:e2e
+# Verificación de código (Linter)
+npm run lint
 ```
 
 ---
 
-## 🛡️ Validaciones y Pipes
+## 🔍 Semana 6: Consultas de Datos, Paginación y QueryBuilder
 
-1. **`ValidationPipe` Global** (`main.ts`):
-   - `whitelist: true`: Elimina propiedades que no estén explícitamente definidas en los DTOs.
-   - `forbidNonWhitelisted: true`: Lanza un error HTTP `400 Bad Request` si la petición incluye propiedades no permitidas.
-   - `transform: true`: Convierte automáticamente los tipos según los decoradores `@Type()` de `class-transformer`.
+### 1. Parámetros de Consulta y Valores por Defecto
 
-2. **`ParseIdPipe` Personalizado** (`src/students/pipes/parse-id.pipe.ts`):
-   - Valida y transforma los parámetros de ruta (`:id`, `:studentId`, `:courseId`).
-   - Rechaza valores no numéricos, números menores o iguales a 0 y decimales con un error `400 Bad Request`.
+#### A. Cursos (`GET /courses` - `CoursesQueryDto`)
+| Parámetro | Tipo | Requerido | Valor por defecto | Validaciones / Restricciones |
+| :--- | :---: | :---: | :---: | :--- |
+| `level` | `string` | No | `undefined` | Filtro exacto por nivel del curso. |
+| `page` | `number` | No | `1` | Entero positivo `>= 1`. |
+| `limit` | `number` | No | `10` | Entero positivo entre `1` y `50`. |
+| `sortBy` | `string` | No | `'id'` | Lista permitida: `'id'`, `'title'`, `'level'`. |
+| `order` | `string` | No | `'ASC'` | Lista permitida: `'ASC'`, `'DESC'` (insensible a mayúsculas/minúsculas). |
+
+#### B. Matrículas (`GET /enrollments` - `EnrollmentsQueryDto`)
+| Parámetro | Tipo | Requerido | Valor por defecto | Validaciones / Restricciones |
+| :--- | :---: | :---: | :---: | :--- |
+| `search` | `string` | No | `undefined` | Coincidencia parcial insensible a mayúsculas (`ILIKE`) en nombre de estudiante o título de curso. |
+| `studentId` | `number` | No | `undefined` | Entero positivo `>= 1`. |
+| `courseId` | `number` | No | `undefined` | Entero positivo `>= 1`. |
+| `activeOnly` | `string` | No | `undefined` | Booleano en cadena (`'true'` / `'false'`). Si es `'true'`, filtra solo estudiantes activos. |
+| `page` | `number` | No | `1` | Entero positivo `>= 1`. |
+| `limit` | `number` | No | `10` | Entero positivo entre `1` y `50`. |
 
 ---
 
-## 📋 Tabla de Endpoints de la API
+### 2. Formato del Contrato de Respuesta Paginada
 
-| Módulo | Método | Endpoint | Descripción | Body / Query | Código Éxito | Códigos Error |
+Tanto `GET /courses` como `GET /enrollments` retornan una estructura uniforme con `items` y `meta`:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "NestJS Fundamentals",
+      "level": "principiante"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+- Si una búsqueda o filtro no produce coincidencias, la API responde con código `200 OK` y `items: []` (no `404`, pues la colección existe).
+- `skip = (page - 1) * limit` asegura páginas no solapadas y consistentes.
+
+---
+
+### 3. Seguridad y Validación
+
+1. **Prevención de Inyección SQL**: La búsqueda en matrículas utiliza marcadores de posición parametrizados en `SelectQueryBuilder`:
+   ```ts
+   qb.andWhere('(student.name ILIKE :search OR course.title ILIKE :search)', {
+     search: `%${query.search.trim()}%`,
+   });
+   ```
+   Nunca se interpola texto del cliente directamente en la consulta SQL.
+2. **Lista Permitida (Allowlist) en Ordenamiento**: Solo los campos autorizados (`id`, `title`, `level`) y las direcciones (`ASC`, `DESC`) son admitidos. Cualquier otro valor es rechazado con `400 Bad Request`.
+3. **Validación Global (`ValidationPipe`)**: Transforma los query strings a sus tipos reales (`number`, etc.) y rechaza parámetros fuera de rango (`page < 1`, `limit > 50`) con `400 Bad Request`.
+
+---
+
+## 🌐 Ejemplos de URLs de Consulta
+
+### Ejemplo 1: Listado paginado de cursos con ordenamiento
+```http
+GET /courses?page=1&limit=5&sortBy=title&order=ASC
+```
+**Respuesta:** `200 OK`
+```json
+{
+  "items": [
+    { "id": 3, "title": "Arquitectura de Software", "level": "avanzado" },
+    { "id": 1, "title": "Fundamentos de NestJS", "level": "principiante" },
+    { "id": 2, "title": "TypeScript Avanzado", "level": "intermedio" }
+  ],
+  "meta": {
+    "total": 3,
+    "page": 1,
+    "limit": 5,
+    "totalPages": 1
+  }
+}
+```
+
+### Ejemplo 2: Filtrado de cursos por nivel
+```http
+GET /courses?level=principiante&page=1&limit=10
+```
+**Respuesta:** `200 OK`
+```json
+{
+  "items": [
+    { "id": 1, "title": "Fundamentos de NestJS", "level": "principiante" }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+### Ejemplo 3: Búsqueda textual y filtro activo en matrículas relacionadas
+```http
+GET /enrollments?search=nest&activeOnly=true&page=1&limit=5
+```
+**Respuesta:** `200 OK`
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "student": {
+        "id": 1,
+        "name": "Ana García",
+        "email": "ana@example.com",
+        "semester": 4,
+        "isActive": true
+      },
+      "course": {
+        "id": 1,
+        "title": "Fundamentos de NestJS",
+        "level": "principiante"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 5,
+    "totalPages": 1
+  }
+}
+```
+
+### Ejemplo 4: Filtrado combinado de matrículas por estudiante y curso
+```http
+GET /enrollments?studentId=1&courseId=2
+```
+**Respuesta:** `200 OK`
+```json
+{
+  "items": [
+    {
+      "id": 2,
+      "student": {
+        "id": 1,
+        "name": "Ana García",
+        "email": "ana@example.com",
+        "semester": 4,
+        "isActive": true
+      },
+      "course": {
+        "id": 2,
+        "title": "TypeScript Avanzado",
+        "level": "intermedio"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+### Ejemplo 5: Petición inválida rechazada por validación
+```http
+GET /courses?page=0&limit=100&sortBy=invalido
+```
+**Respuesta:** `400 Bad Request`
+```json
+{
+  "message": [
+    "page must not be less than 1",
+    "limit must not be greater than 50",
+    "sortBy must be one of the following values: id, title, level"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+### Ejemplo 6: Búsqueda sin coincidencias (colección vacía)
+```http
+GET /enrollments?search=registroinexistente
+```
+**Respuesta:** `200 OK`
+```json
+{
+  "items": [],
+  "meta": {
+    "total": 0,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 0
+  }
+}
+```
+
+---
+
+## 📋 Tabla Completa de Endpoints de la API
+
+| Módulo | Método | Endpoint | Descripción | Parámetros Query / Body | Código Éxito | Códigos Error |
 | :--- | :---: | :--- | :--- | :--- | :---: | :---: |
 | **App** | `GET` | `/` | Estado general de la API | N/A | `200 OK` | - |
-| **Courses** | `GET` | `/courses` | Listar cursos (filtro opcional por nivel) | Query: `level` | `200 OK` | - |
+| **Courses** | `GET` | `/courses` | Listar cursos paginados | Query: `level`, `page`, `limit`, `sortBy`, `order` | `200 OK` | `400` |
 | **Courses** | `GET` | `/courses/:id` | Obtener curso por ID | Param: `id` | `200 OK` | `404` |
-| **Courses** | `POST` | `/courses` | Crear nuevo curso | Body: `CreateCourseDto` | `201 Created` | `400` |
-| **Courses** | `PATCH` | `/courses/:id` | Modificar curso | Body: `{ title?, level? }` | `200 OK` | `404` |
+| **Courses** | `POST` | `/courses` | Crear nuevo curso | Body: `CreateCourseDto` (`title`, `level`) | `201 Created` | `400` |
+| **Courses** | `PATCH` | `/courses/:id` | Modificar curso | Param: `id`, Body: `UpdateCourseDto` | `200 OK` | `400, 404` |
 | **Courses** | `DELETE` | `/courses/:id` | Eliminar curso | Param: `id` | `200 OK` | `404` |
-| **Students** | `GET` | `/students` | Listar estudiantes con filtros | Query: `career`, `semester`, `isActive` | `200 OK` | `400` |
+| **Students** | `GET` | `/students` | Listar estudiantes | Query: `career`, `semester`, `isActive` | `200 OK` | `400` |
 | **Students** | `GET` | `/students/:id` | Obtener estudiante por ID | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Students** | `POST` | `/students` | Registrar estudiante | Body: `CreateStudentDto` | `201 Created` | `400, 409` |
-| **Students** | `PATCH` | `/students/:id` | Actualizar datos del estudiante | Body: `UpdateStudentDto` | `200 OK` | `400, 404, 409` |
-| **Students** | `PATCH` | `/students/:id/status` | Cambiar estado activo/inactivo | Body: `UpdateStudentStatusDto` | `200 OK` | `400, 404` |
-| **Students** | `DELETE` | `/students/:id` | Eliminar estudiante (solo si activo) | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
+| **Students** | `PATCH` | `/students/:id` | Actualizar estudiante | Param: `id`, Body: `UpdateStudentDto` | `200 OK` | `400, 404, 409` |
+| **Students** | `PATCH` | `/students/:id/status` | Cambiar estado activo/inactivo | Param: `id`, Body: `UpdateStudentStatusDto` | `200 OK` | `400, 404` |
+| **Students** | `DELETE` | `/students/:id` | Eliminar estudiante | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Enrollments** | `POST` | `/enrollments` | Registrar matrícula | Body: `CreateEnrollmentDto` | `201 Created` | `400, 404, 409` |
-| **Enrollments** | `GET` | `/enrollments` | Listar matrículas con filtros | Query: `studentId`, `courseId` | `200 OK` | `400` |
+| **Enrollments** | `GET` | `/enrollments` | Listar matrículas con búsqueda/relaciones | Query: `search`, `studentId`, `courseId`, `activeOnly`, `page`, `limit` | `200 OK` | `400` |
 | **Enrollments** | `GET` | `/enrollments/:id` | Obtener matrícula por ID | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Enrollments** | `GET` | `/students/:studentId/enrollments` | Matrículas de un estudiante | Param: `studentId` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Enrollments** | `GET` | `/courses/:courseId/enrollments` | Matrículas de un curso | Param: `courseId` (ParseIdPipe) | `200 OK` | `400, 404` |
-| **Enrollments** | `DELETE` | `/enrollments/:id` | Cancelar/eliminar matrícula | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
-
----
-
-## 🧪 Evidencias y Demostraciones Paso a Paso
-
-Los datos iniciales de prueba en memoria son:
-- **Estudiantes**:
-  - `ID: 1` -> Ana García (`isActive: true`)
-  - `ID: 2` -> Carlos López (`isActive: false`)
-  - `ID: 3` -> María Rodríguez (`isActive: true`)
-- **Cursos**:
-  - `ID: 1` -> NestJS Fundamentals (`level: beginner`)
-  - `ID: 2` -> REST APIs with NestJS (`level: beginner`)
-  - `ID: 3` -> NestJS Architecture (`level: intermediate`)
-
----
-
-### 1️⃣ Demostración: Matrícula Válida (`POST /enrollments` -> `201 Created`)
-
-**Request**:
-```http
-POST /enrollments HTTP/1.1
-Host: localhost:3000
-Content-Type: application/json
-
-{
-  "studentId": 1,
-  "courseId": 1
-}
-```
-
-**Response**: `201 Created`
-```json
-{
-  "id": 1,
-  "studentId": 1,
-  "courseId": 1
-}
-```
-
----
-
-### 2️⃣ Demostración: Matrícula Duplicada (`POST /enrollments` -> `409 Conflict`)
-
-Intentar matricular al mismo estudiante (`studentId: 1`) en el mismo curso (`courseId: 1`) por segunda vez.
-
-**Request**:
-```http
-POST /enrollments HTTP/1.1
-Host: localhost:3000
-Content-Type: application/json
-
-{
-  "studentId": 1,
-  "courseId": 1
-}
-```
-
-**Response**: `409 Conflict`
-```json
-{
-  "message": "El estudiante con identificador 1 ya se encuentra matriculado en el curso 1.",
-  "error": "Conflict",
-  "statusCode": 409
-}
-```
-
----
-
-### 3️⃣ Demostración: Matrícula con Estudiante Inactivo (`POST /enrollments` -> `400 Bad Request`)
-
-El estudiante con `ID: 2` (Carlos López) se encuentra en estado inactivo (`isActive: false`).
-
-**Request**:
-```http
-POST /enrollments HTTP/1.1
-Host: localhost:3000
-Content-Type: application/json
-
-{
-  "studentId": 2,
-  "courseId": 1
-}
-```
-
-**Response**: `400 Bad Request`
-```json
-{
-  "message": "El estudiante 'Carlos López' (ID: 2) se encuentra inactivo y no puede matricularse en ningún curso.",
-  "error": "Bad Request",
-  "statusCode": 400
-}
-```
-
----
-
-### 4️⃣ Demostración: Matrícula con Identificador Inexistente (`POST /enrollments` -> `404 Not Found`)
-
-#### A. Estudiante Inexistente (`studentId: 999`)
-**Request**:
-```http
-POST /enrollments HTTP/1.1
-Host: localhost:3000
-Content-Type: application/json
-
-{
-  "studentId": 999,
-  "courseId": 1
-}
-```
-
-**Response**: `404 Not Found`
-```json
-{
-  "message": "Estudiante con identificador 999 no encontrado.",
-  "error": "Not Found",
-  "statusCode": 404
-}
-```
-
-#### B. Curso Inexistente (`courseId: 999`)
-**Request**:
-```http
-POST /enrollments HTTP/1.1
-Host: localhost:3000
-Content-Type: application/json
-
-{
-  "studentId": 1,
-  "courseId": 999
-}
-```
-
-**Response**: `404 Not Found`
-```json
-{
-  "message": "Curso con identificador 999 no encontrado.",
-  "error": "Not Found",
-  "statusCode": 404
-}
-```
-
----
-
-### 5️⃣ Demostración: Filtros Combinados en Matrículas (`GET /enrollments`)
-
-Asumiendo que existen matrículas registradas:
-- Matrícula 1: `studentId: 1, courseId: 1`
-- Matrícula 2: `studentId: 1, courseId: 2`
-- Matrícula 3: `studentId: 3, courseId: 1`
-
-#### A. Filtrar por estudiante (`GET /enrollments?studentId=1`)
-**Response**: `200 OK`
-```json
-[
-  { "id": 1, "studentId": 1, "courseId": 1 },
-  { "id": 2, "studentId": 1, "courseId": 2 }
-]
-```
-
-#### B. Filtrar por curso (`GET /enrollments?courseId=1`)
-**Response**: `200 OK`
-```json
-[
-  { "id": 1, "studentId": 1, "courseId": 1 },
-  { "id": 3, "studentId": 3, "courseId": 1 }
-]
-```
-
-#### C. Filtro Combinado (`GET /enrollments?studentId=3&courseId=1`)
-**Response**: `200 OK`
-```json
-[
-  { "id": 3, "studentId": 3, "courseId": 1 }
-]
-```
-
-#### D. Consultar por ruta anidada de estudiante (`GET /students/1/enrollments`)
-**Response**: `200 OK`
-```json
-[
-  { "id": 1, "studentId": 1, "courseId": 1 },
-  { "id": 2, "studentId": 1, "courseId": 2 }
-]
-```
-
-#### E. Consultar por ruta anidada de curso (`GET /courses/1/enrollments`)
-**Response**: `200 OK`
-```json
-[
-  { "id": 1, "studentId": 1, "courseId": 1 },
-  { "id": 3, "studentId": 3, "courseId": 1 }
-]
-```
-
----
-
-### 6️⃣ Demostración: Cancelación de una Matrícula (`DELETE /enrollments/:id`)
-
-#### A. Cancelar matrícula existente con `ID: 1`
-**Request**:
-```http
-DELETE /enrollments/1 HTTP/1.1
-Host: localhost:3000
-```
-
-**Response**: `200 OK`
-```json
-{
-  "id": 1,
-  "studentId": 1,
-  "courseId": 1
-}
-```
-
-#### B. Verificar que ya no existe (`GET /enrollments/1` -> `404 Not Found`)
-**Request**:
-```http
-GET /enrollments/1 HTTP/1.1
-Host: localhost:3000
-```
-
-**Response**: `404 Not Found`
-```json
-{
-  "message": "Matrícula con identificador 1 no encontrada.",
-  "error": "Not Found",
-  "statusCode": 404
-}
-```
-
-#### C. Validación de parámetro inválido con Pipe (`DELETE /enrollments/abc` -> `400 Bad Request`)
-**Response**: `400 Bad Request`
-```json
-{
-  "message": "El identificador 'abc' no es válido. Debe ser un número entero positivo mayor a 0.",
-  "error": "Bad Request",
-  "statusCode": 400
-}
-```
+| **Enrollments** | `DELETE` | `/enrollments/:id` | Cancelar matrícula | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |

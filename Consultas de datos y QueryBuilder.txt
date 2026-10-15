@@ -1,0 +1,191 @@
+GUIA DE DEMOSTRACION Y PRUEBAS - COURSEHUB API (SEMANA 6)
+
+Estudiante: German Fernández
+Repositorio: https://github.com/Germanxf/coursehub
+
+
+DEMOSTRACIÓN REQUERIDA - SEMANA 6: CONSULTAS DE DATOS
+
+
+1. Crear suficientes cursos para mostrar dos páginas de resultados
+
+Crear Curso 1:
+- Metodo: POST
+- URL: http://localhost:3000/courses
+- Headers: Content-Type: application/json
+- Body:
+{
+  "title": "NestJS Básico",
+  "level": "principiante"
+}
+
+Respuesta Esperada (201 Created):
+{
+  "id": 1,
+  "title": "NestJS Básico",
+  "level": "principiante"
+}
+
+(Repetir para crear al menos 6 cursos con niveles: principiante, intermedio, avanzado)
+
+
+2. Solicitar dos páginas consecutivas con el mismo ordenamiento (Sin repetir elementos)
+
+Página 1:
+- Metodo: GET
+- URL: http://localhost:3000/courses?page=1&limit=3&sortBy=id&order=ASC
+
+Respuesta Esperada (200 OK):
+{
+  "items": [
+    { "id": 1, "title": "NestJS Básico", "level": "principiante" },
+    { "id": 2, "title": "TypeScript Avanzado", "level": "avanzado" },
+    { "id": 3, "title": "Bases de Datos con PostgreSQL", "level": "intermedio" }
+  ],
+  "meta": {
+    "total": 6,
+    "page": 1,
+    "limit": 3,
+    "totalPages": 2
+  }
+}
+
+Página 2:
+- Metodo: GET
+- URL: http://localhost:3000/courses?page=2&limit=3&sortBy=id&order=ASC
+
+Respuesta Esperada (200 OK):
+{
+  "items": [
+    { "id": 4, "title": "Arquitectura de Software", "level": "avanzado" },
+    { "id": 5, "title": "Diseño de APIs REST", "level": "principiante" },
+    { "id": 6, "title": "Microservicios con NestJS", "level": "intermedio" }
+  ],
+  "meta": {
+    "total": 6,
+    "page": 2,
+    "limit": 3,
+    "totalPages": 2
+  }
+}
+
+
+3. Filtrar cursos por nivel y comprobar los metadatos
+
+- Metodo: GET
+- URL: http://localhost:3000/courses?level=principiante&page=1&limit=10
+
+Respuesta Esperada (200 OK):
+{
+  "items": [
+    { "id": 1, "title": "NestJS Básico", "level": "principiante" },
+    { "id": 5, "title": "Diseño de APIs REST", "level": "principiante" }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+
+
+4. Buscar matrículas por una parte del nombre de estudiante o título de curso
+
+- Metodo: GET
+- URL: http://localhost:3000/enrollments?search=nest
+
+Respuesta Esperada (200 OK):
+{
+  "items": [
+    {
+      "id": 1,
+      "student": {
+        "id": 1,
+        "name": "Ana García",
+        "email": "ana@example.com",
+        "semester": 4,
+        "isActive": true
+      },
+      "course": {
+        "id": 1,
+        "title": "NestJS Básico",
+        "level": "principiante"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+
+
+5. Combinar búsqueda, estudiante activo y paginación
+
+- Metodo: GET
+- URL: http://localhost:3000/enrollments?search=nest&activeOnly=true&page=1&limit=5
+
+Respuesta Esperada (200 OK):
+{
+  "items": [
+    {
+      "id": 1,
+      "student": {
+        "id": 1,
+        "name": "Ana García",
+        "email": "ana@example.com",
+        "semester": 4,
+        "isActive": true
+      },
+      "course": {
+        "id": 1,
+        "title": "NestJS Básico",
+        "level": "principiante"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 5,
+    "totalPages": 1
+  }
+}
+
+
+6. Muestra una petición inválida que responda 400
+
+- Metodo: GET
+- URL: http://localhost:3000/courses?page=0&limit=999&sortBy=invalido&order=DESVIADO
+
+Respuesta Esperada (400 Bad Request):
+{
+  "message": [
+    "page must not be less than 1",
+    "limit must not be greater than 50",
+    "sortBy must be one of the following values: id, title, level",
+    "order must be one of the following values: ASC, DESC"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+
+7. Muestra una búsqueda que no encuentre resultados y responda correctamente con colección vacía
+
+- Metodo: GET
+- URL: http://localhost:3000/enrollments?search=terminoquenoexiste12345
+
+Respuesta Esperada (200 OK):
+{
+  "items": [],
+  "meta": {
+    "total": 0,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 0
+  }
+}

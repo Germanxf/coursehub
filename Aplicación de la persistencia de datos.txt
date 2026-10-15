@@ -1,0 +1,193 @@
+GUIA DE DEMOSTRACION Y PRUEBAS - COURSEHUB API
+
+Estudiante: German Fernández
+Repositorio: https://github.com/Germanxf/coursehub
+
+
+1. Crear un curso y un estudiante activo
+
+Crear Estudiante Activo:
+- Metodo: POST
+- URL: http://localhost:3000/students
+- Headers: Content-Type: application/json
+- Body:
+{
+  "name": "German Fernández",
+  "email": "german@example.com",
+  "career": "Ingeniería de Sistemas",
+  "semester": 6,
+  "isActive": true
+}
+
+Respuesta Esperada (201 Created):
+{
+  "id": 1,
+  "name": "German Fernández",
+  "email": "german@example.com",
+  "career": "Ingeniería de Sistemas",
+  "semester": 6,
+  "isActive": true
+}
+
+Crear Curso:
+- Metodo: POST
+- URL: http://localhost:3000/courses
+- Headers: Content-Type: application/json
+- Body:
+{
+  "title": "Arquitectura de Software",
+  "level": "avanzado"
+}
+
+Respuesta Esperada (201 Created):
+{
+  "id": 1,
+  "title": "Arquitectura de Software",
+  "level": "avanzado"
+}
+
+
+2. Crear una matrícula válida
+
+- Metodo: POST
+- URL: http://localhost:3000/enrollments
+- Headers: Content-Type: application/json
+- Body:
+{
+  "studentId": 1,
+  "courseId": 1
+}
+
+Respuesta Esperada (201 Created):
+{
+  "id": 1,
+  "studentId": 1,
+  "courseId": 1
+}
+
+
+3. Reiniciar la API y consultar la misma matrícula
+
+Paso 1: Detener el servidor con Ctrl + C en la terminal y volverlo a iniciar con npm run start:dev.
+
+Paso 2: Consultar la matrícula creada:
+- Metodo: GET
+- URL: http://localhost:3000/enrollments/1
+
+Respuesta Esperada (200 OK):
+{
+  "id": 1,
+  "studentId": 1,
+  "courseId": 1
+}
+
+
+4. Intentar una matrícula duplicada y mostrar el 409
+
+- Metodo: POST
+- URL: http://localhost:3000/enrollments
+- Headers: Content-Type: application/json
+- Body:
+{
+  "studentId": 1,
+  "courseId": 1
+}
+
+Respuesta Esperada (409 Conflict):
+{
+  "message": "El estudiante con identificador 1 ya se encuentra matriculado en el curso 1.",
+  "error": "Conflict",
+  "statusCode": 409
+}
+
+
+5. Intentar matricular un estudiante inactivo y mostrar el error correspondiente
+
+Paso 1: Desactivar al estudiante cambiando su estado a inactivo:
+- Metodo: PATCH
+- URL: http://localhost:3000/students/1/status
+- Headers: Content-Type: application/json
+- Body:
+{
+  "isActive": false
+}
+
+Respuesta Esperada (200 OK):
+{
+  "id": 1,
+  "name": "German Fernández",
+  "email": "german@example.com",
+  "career": "Ingeniería de Sistemas",
+  "semester": 6,
+  "isActive": false
+}
+
+Paso 2: Crear un segundo curso para la prueba:
+- POST http://localhost:3000/courses con {"title": "Bases de Datos", "credits": 3} -> Genera ID 2.
+
+Paso 3: Intentar matricular al estudiante inactivo en el curso 2:
+- Metodo: POST
+- URL: http://localhost:3000/enrollments
+- Headers: Content-Type: application/json
+- Body:
+{
+  "studentId": 1,
+  "courseId": 2
+}
+
+Respuesta Esperada (400 Bad Request):
+{
+  "message": "El estudiante 'German Fernández' (ID: 1) se encuentra inactivo y no puede matricularse en ningún curso.",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+
+6. Filtrar las matrículas por estudiante o curso
+
+Filtrar por Estudiante:
+- Metodo: GET
+- URL: http://localhost:3000/enrollments?studentId=1
+- Respuesta Esperada (200 OK):
+[
+  {
+    "id": 1,
+    "studentId": 1,
+    "courseId": 1
+  }
+]
+
+Filtrar por Curso:
+- Metodo: GET
+- URL: http://localhost:3000/enrollments?courseId=1
+- Respuesta Esperada (200 OK):
+[
+  {
+    "id": 1,
+    "studentId": 1,
+    "courseId": 1
+  }
+]
+
+
+7. Cancelar la matrícula y comprobar que ya no se encuentra
+
+Paso 1: Eliminar la matrícula:
+- Metodo: DELETE
+- URL: http://localhost:3000/enrollments/1
+- Respuesta Esperada (200 OK):
+{
+  "id": 1,
+  "studentId": 1,
+  "courseId": 1
+}
+
+Paso 2: Comprobar que ya no existe:
+- Metodo: GET
+- URL: http://localhost:3000/enrollments/1
+- Respuesta Esperada (404 Not Found):
+{
+  "message": "Matrícula con identificador 1 no encontrada.",
+  "error": "Not Found",
+  "statusCode": 404
+}

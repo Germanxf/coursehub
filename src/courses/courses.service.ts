@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto.js';
 import { UpdateCourseDto } from './dto/update-couerse.dto.js'; // Asegúrate de tener este DTO
 import { Course } from './entities/course.entity.js';
+import { CoursesQueryDto } from './dto/courses-query.dto.js';
 
 @Injectable()
 export class CoursesService {
@@ -13,12 +14,25 @@ export class CoursesService {
     private readonly courseRepository: Repository<Course>
   ) {}
 
-  // GET: Devuelve toda la colección, opcionalmente filtrada por level
-  async findAll(level?: string): Promise<Course[]> {
-    if (!level) {
-      return await this.courseRepository.find();
-    }
-    return await this.courseRepository.find({ where: { level } });
+  // GET: Devuelve colección paginada con items y meta
+  async findAll(query: CoursesQueryDto = new CoursesQueryDto()) {
+    const { level, page = 1, limit = 10, sortBy = 'id', order = 'ASC' } = query;
+    const [items, total] = await this.courseRepository.findAndCount({
+      where: level ? { level } : {},
+      order: { [sortBy]: order },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // GET por ID: Devuelve un curso específico o lanza error 404 (Requisito de etapa)

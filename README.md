@@ -56,38 +56,70 @@ src/
 
 ---
 
-## ⚙️ Instalación y Ejecución
+## ⚙️ Requisitos y Configuración por Ambientes (Semana 7 - Etapa 2)
 
-### 1. Variables de Entorno (`.env`)
-Configurar el archivo `.env` en la raíz del proyecto basándose en `.env.example`:
-```env
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=coursehub
-DATABASE_USER=postgres
-DATABASE_PASSWORD=tucontraseña
+### 1. Requisitos Previos
+- **Node.js**: v20 o superior
+- **PostgreSQL**: v15 o superior
+- **Gestor de paquetes**: npm o pnpm
+
+### 2. Configuración de Variables de Entorno (`.env`)
+CourseHub API centraliza toda su configuración mediante `@nestjs/config` y valida los tipos y presencia de las variables al iniciar utilizando un esquema estricto con **Joi**.
+
+Para configurar el entorno local, copie la plantilla de ejemplo `.env.example`:
+```bash
+cp .env.example .env
+```
+> ⚠️ **ADVERTENCIA DE SEGURIDAD**: El archivo `.env` contiene credenciales locales sensibles y está ignorado en `.gitignore`. **Nunca debe compartirse, entregarse ni versionarse en el repositorio git.**
+
+Variables requeridas en `.env`:
+```dotenv
+NODE_ENV=development
+PORT=3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=coursehub
+DB_USER=postgres
+DB_PASSWORD=replace-with-your-local-password
 ```
 
-### 2. Instalar dependencias
+| Variable | Tipo / Valores | Descripción |
+| :--- | :--- | :--- |
+| `NODE_ENV` | `development` \| `test` \| `production` | Ambiente de ejecución (controla sincronización de BD) |
+| `PORT` | Número (Puerto válido) | Puerto HTTP en el que escuchará el servidor NestJS |
+| `DB_HOST` | Cadena (Requerido) | Host del servidor PostgreSQL |
+| `DB_PORT` | Número (Puerto válido) | Puerto del servidor PostgreSQL (por defecto `5432`) |
+| `DB_NAME` | Cadena (Requerido) | Nombre de la base de datos relacional |
+| `DB_USER` | Cadena (Requerido) | Usuario de acceso a PostgreSQL |
+| `DB_PASSWORD`| Cadena (Permite vacía) | Contraseña de acceso a PostgreSQL |
+
+### 3. Comportamiento por Ambientes (`NODE_ENV`)
+- **`development`**: Activa `synchronize: true` en TypeORM para permitir la evolución rápida de esquemas durante el desarrollo local y aprendizaje.
+- **`production`**: Desactiva estrictamente la sincronización automática (`synchronize: false`) para proteger la integridad de los datos reales y obligar al uso de migraciones controladas.
+- **Fail-Fast**: Si alguna variable obligatoria falta o no cumple el esquema (ej. puerto inválido), la aplicación se detiene inmediatamente al iniciar e informa exactamente qué variable falló.
+
+### 4. Instalación y Ejecución
+
 ```bash
+# 1. Instalar dependencias
 npm install
-```
 
-### 3. Iniciar la aplicación
-```bash
-# Modo desarrollo (watch)
+# 2. Iniciar en modo desarrollo
 npm run start:dev
 
-# Compilar proyecto
+# 3. Compilar bundle de producción
 npm run build
+
+# 4. Iniciar en modo producción
+npm run start:prod
 ```
 
-### 4. Ejecutar Pruebas y Linter
+### 5. Pruebas y Calidad de Código
 ```bash
-# Pruebas unitarias
+# Ejecutar pruebas unitarias
 npm run test
 
-# Verificación de código (Linter)
+# Verificación estática con linter
 npm run lint
 ```
 

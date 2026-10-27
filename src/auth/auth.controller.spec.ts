@@ -46,7 +46,10 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should delegate login call to AuthService', async () => {
       const dto = { email: 'ana@example.com', password: 'password123' };
-      const expected = { id: 1, email: 'ana@example.com', createdAt: new Date() };
+      const expected = {
+        accessToken: 'mocked.jwt.token',
+        user: { id: 1, email: 'ana@example.com', createdAt: new Date() },
+      };
       mockAuthService.login.mockResolvedValue(expected);
 
       const result = await controller.login(dto);

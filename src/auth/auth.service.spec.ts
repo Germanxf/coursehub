@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
 import { vi } from 'vitest';
 import { AuthService } from './auth.service.js';
 import { UsersService } from '../users/users.service.js';
@@ -13,6 +14,10 @@ describe('AuthService', () => {
     findByEmailWithPassword: vi.fn(),
   };
 
+  const mockJwtService = {
+    signAsync: vi.fn(),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -22,6 +27,10 @@ describe('AuthService', () => {
         {
           provide: UsersService,
           useValue: mockUsersService,
+        },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
         },
       ],
     }).compile();
@@ -63,10 +72,11 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should return safe user data when credentials are valid', async () => {
+    it('should return accessToken and safe user data when credentials are valid', async () => {
       const now = new Date();
       const plainPassword = 'securePassword123';
       const hash = await bcrypt.hash(plainPassword, 10);
+      const fakeToken = 'mocked.jwt.token';
 
       mockUsersService.findByEmailWithPassword.mockResolvedValue({
         id: 1,
@@ -74,6 +84,7 @@ describe('AuthService', () => {
         passwordHash: hash,
         createdAt: now,
       });
+      mockJwtService.signAsync.mockResolvedValue(fakeToken);
 
       const result = await service.login({
         email: 'ana@example.com',
@@ -81,15 +92,22 @@ describe('AuthService', () => {
       });
 
       expect(result).toEqual({
-        id: 1,
-        email: 'ana@example.com',
-        createdAt: now,
+        accessToken: fakeToken,
+        user: {
+          id: 1,
+          email: 'ana@example.com',
+          createdAt: now,
+        },
       });
-      expect(result).not.toHaveProperty('password');
-      expect(result).not.toHaveProperty('passwordHash');
+      expect(mockJwtService.signAsync).toHaveBeenCalledWith({
+        sub: 1,
+        email: 'ana@example.com',
+      });
+      expect(result.user).not.toHaveProperty('password');
+      expect(result.user).not.toHaveProperty('passwordHash');
     });
 
-    it('should throw UnauthorizedException when password does not match', async () => {
+    it('should throw UnauthorizedException when password does not match and not emit token', async () => {
       const hash = await bcrypt.hash('correctPassword', 10);
       mockUsersService.findByEmailWithPassword.mockResolvedValue({
         id: 1,
@@ -104,9 +122,11 @@ describe('AuthService', () => {
           password: 'wrongPassword',
         }),
       ).rejects.toThrow(UnauthorizedException);
+
+      expect(mockJwtService.signAsync).not.toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException when user does not exist', async () => {
+    it('should throw UnauthorizedException when user does not exist and not emit token', async () => {
       mockUsersService.findByEmailWithPassword.mockResolvedValue(null);
 
       await expect(
@@ -115,6 +135,8 @@ describe('AuthService', () => {
           password: 'somePassword123',
         }),
       ).rejects.toThrow(UnauthorizedException);
+
+      expect(mockJwtService.signAsync).not.toHaveBeenCalled();
     });
   });
 });

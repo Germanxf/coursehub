@@ -1,4 +1,8 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import Joi from 'joi';
@@ -12,6 +16,11 @@ import { StudentsModule } from './students/students.module.js';
 import { EnrollmentsModule } from './enrollments/enrollments.module.js';
 import { UsersModule } from './users/users.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { AuthController } from './auth/auth.controller.js';
+import { CoursesController } from './courses/courses.controller.js';
+import { EnrollmentsController } from './enrollments/enrollments.controller.js';
+import { StudentsController } from './students/students.controller.js';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware.js';
 
 @Module({
   imports: [
@@ -52,4 +61,17 @@ import { AuthModule } from './auth/auth.module.js';
   controllers: [AppController, WelcomeController],
   providers: [AppService, WelcomeService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestLoggerMiddleware)
+      .forRoutes(
+        AppController,
+        WelcomeController,
+        AuthController,
+        CoursesController,
+        EnrollmentsController,
+        StudentsController,
+      );
+  }
+}

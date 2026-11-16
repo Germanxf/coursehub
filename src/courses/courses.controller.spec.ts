@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
 import { CoursesController } from './courses.controller.js';
 import { CoursesService } from './courses.service.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 describe('CoursesController', () => {
   let controller: CoursesController;
@@ -13,6 +14,7 @@ describe('CoursesController', () => {
     update: vi.fn(),
     remove: vi.fn(),
   };
+  const mockUpdateCourse = { execute: vi.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +24,7 @@ describe('CoursesController', () => {
           provide: CoursesService,
           useValue: mockCoursesService,
         },
+        { provide: UpdateCourseUseCase, useValue: mockUpdateCourse },
       ],
     }).compile();
 

@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto.js';
-import { UpdateCourseDto } from './dto/update-couerse.dto.js'; // Asegúrate de tener este DTO
 import { Course } from './entities/course.entity.js';
 import { CoursesQueryDto } from './dto/courses-query.dto.js';
 
@@ -51,17 +50,6 @@ export class CoursesService {
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
     const newCourse = this.courseRepository.create(createCourseDto);
     return await this.courseRepository.save(newCourse);
-  }
-
-  // PATCH: Actualiza parcialmente un curso
-  async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
-    // Reutilizamos findOne que ya maneja el error 404 si no existe
-    const course = await this.findOne(id);
-    
-    // Mezclamos los datos nuevos con los existentes
-    Object.assign(course, updateCourseDto);
-    
-    return await this.courseRepository.save(course);
   }
 
   // DELETE: Elimina un curso

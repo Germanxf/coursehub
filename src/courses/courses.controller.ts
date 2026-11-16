@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -11,10 +12,15 @@ import {
 import { CoursesService } from './courses.service.js';
 import { CreateCourseDto } from './dto/create-course.dto.js';
 import { CoursesQueryDto } from './dto/courses-query.dto.js';
+import { UpdateCourseDto } from './dto/update-couerse.dto.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(
+    private readonly coursesService: CoursesService,
+    private readonly updateCourse: UpdateCourseUseCase,
+  ) {}
 
   @Get()
   findAll(@Query() query: CoursesQueryDto) {
@@ -22,8 +28,8 @@ export class CoursesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.coursesService.findOne(Number(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.findOne(id);
   }
 
   @Post()
@@ -33,14 +39,14 @@ export class CoursesController {
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
-    @Body() body: { title?: string; level?: string },
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateCourseDto,
   ) {
-    return this.coursesService.update(Number(id), body);
+    return this.updateCourse.execute(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.coursesService.remove(Number(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.remove(id);
   }
 }

@@ -357,3 +357,21 @@ GET /enrollments?search=registroinexistente
 | **Enrollments** | `GET` | `/students/:studentId/enrollments` | Matrículas de un estudiante | Param: `studentId` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Enrollments** | `GET` | `/courses/:courseId/enrollments` | Matrículas de un curso | Param: `courseId` (ParseIdPipe) | `200 OK` | `400, 404` |
 | **Enrollments** | `DELETE` | `/enrollments/:id` | Cancelar matrícula | Param: `id` (ParseIdPipe) | `200 OK` | `400, 404` |
+
+---
+
+## Lectura rápido de pruebas
+
+Las pruebas de las sesiones 23 y 24 siguen el patrón Arrange–Act–Assert:
+
+- `UpdateCourseUseCase` usa un repositorio simulado y cubre actualización exitosa, recurso inexistente y fallo de persistencia.
+- `CoursesController` verifica la delegación del `id` y del DTO al caso de uso y la propagación de errores.
+- Ejecutar `npm run test:cov` genera cobertura; se interpreta como señal de ramas no ejercitadas, no como sustituto de expectativas claras o revisión de código.
+
+```bash
+npm run test
+npm test -- update-course
+npm test -- courses.controller
+npm run test:cov
+npm run lint
+```

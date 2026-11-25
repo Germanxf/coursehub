@@ -1,8 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
 import { vi } from 'vitest';
 import { CoursesController } from './courses.controller.js';
 import { CoursesService } from './courses.service.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 describe('CoursesController', () => {
@@ -23,6 +25,8 @@ describe('CoursesController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CoursesController],
       providers: [
+        { provide: JwtService, useValue: { verifyAsync: vi.fn() } },
+        { provide: JwtAuthGuard, useValue: { canActivate: vi.fn(() => true) } },
         {
           provide: CoursesService,
           useValue: mockCoursesService,

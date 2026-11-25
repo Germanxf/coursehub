@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module.js';
 import { CoursesController } from './courses.controller.js';
 import { CoursesService } from './courses.service.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,7 @@ import { TypeOrmCourseRepository } from './adapters/typeorm-course.repository.js
 import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course])],
+  imports: [TypeOrmModule.forFeature([Course]), AuthModule],
   controllers: [CoursesController],
   providers: [
     CoursesService,

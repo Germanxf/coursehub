@@ -29,6 +29,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Controlled failure exercise (temporary)
+        run: exit 1
+
       - name: Unit tests
         run: npm test
 
